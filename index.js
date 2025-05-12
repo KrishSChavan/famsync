@@ -2,6 +2,7 @@ const express = require("express");
 const socket = require("socket.io");
 const app = express();
 
+require('dotenv').config();
 
 var path = require("path");
 var bodyParser = require('body-parser');
@@ -32,8 +33,8 @@ app.get('/', function(req,res){
 
 
 
-const server = app.listen(process.env.PORT || 3001, () => {
-	console.log(`Server running on port: ${process.env.PORT || 3001}`);
+const server = app.listen(process.env.PORT || 3000, () => {
+	console.log(`Server running on port: ${process.env.PORT || 3000}`);
 });
 
 var io = socket(server);
