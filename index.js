@@ -26,9 +26,9 @@ const limiter = rateLimit({
 });
 
 app.use(bodyParser.urlencoded({extended: false}));
-// app.use(express.static(path.join(__dirname,'app')));
-app.use('/css', express.static(path.join(__dirname, 'app/css')));
-app.use('/js', express.static(path.join(__dirname, 'app/js')));
+app.use(express.static(path.join(__dirname,'app')));
+// app.use('/css', express.static(path.join(__dirname, 'app/css')));
+// app.use('/js', express.static(path.join(__dirname, 'app/js')));
 app.use(helmet());
 app.use(limiter);
 
@@ -52,9 +52,6 @@ app.get('/:name', function(req,res){
   // res.send("Welcome!");
 
   const name = req.params.name;
-  
-  // Don't catch actual static files like /main.js or /favicon.ico
-  if (name.includes('.') || name === 'favicon.ico') return next();
 
   let match = false;
   chavans.forEach((person) => {
@@ -235,6 +232,27 @@ io.on("connection", function (socket) {
 
 
 
+  // Task completion
+
+  socket.on('task-crossed', async(taskId, isComplete) => {
+    const { data, error } = await supabase
+      .from('tasks')
+      .update({ complete: isComplete })
+      .eq('id', taskId)
+
+    if (error) {
+      console.error(error);
+    } else {
+      // return data;
+    }
+  });
+
+
+
+
+
+
+
   // Web Push Notifications
 
 
@@ -246,15 +264,19 @@ io.on("connection", function (socket) {
 
   socket.on('save-subscription', (name, subscription) => {
     console.log(`subscription for ${name} saved`);
+    socket.emit('test', `subscription for ${name} saved`);
     subscriptions[name] = subscription;
     console.log(subscription);
   });
 
-  socket.on('pingUser', (to, title, message) => {
+  socket.on('pingUser', (to, from, title, message) => {
     console.log(`trying to send to ${to} | ${title} --> ${message}`);
+    // socket.emit('test', `trying to send to ${to} | ${title} --> ${message}`);
     const subscription = subscriptions[to];
+    socket.emit('test', subscription);
     if (subscription) {
-      const payload = JSON.stringify({ title, body: message });
+      const noti_header = `${title} - ${from}`;
+      const payload = JSON.stringify({ noti_header, body: message });
       webPush.sendNotification(subscription, payload).catch(console.error);
       console.log(`Noti sent to ${to}`);
       socket.emit('registered-and-sent', to);
