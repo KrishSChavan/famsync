@@ -276,6 +276,7 @@ io.on("connection", function (socket) {
     socket.emit('test', subscription);
     if (subscription) {
       const noti_header = `${title} - ${from}`;
+      
       const payload = JSON.stringify({ noti_header, body: message });
       webPush.sendNotification(subscription, payload).catch(console.error);
       console.log(`Noti sent to ${to}`);
